@@ -3,11 +3,24 @@ import { HttpError } from "../helpers/index.js";
 import Event from "../models/event.js";
 
 const getAllEvents = async (req, res) => {
-  const result = await Event.find();
+  const { page = 1, limit = 6 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const count = (await Event.find()).length;
+
+  const result = await Event.find({}, "", {
+    skip,
+    limit,
+  });
+
   if (result.length === 0) {
     throw HttpError(404, "Not found");
   }
-  res.json(result);
+
+  res.json({
+    data: result,
+    total: count,
+  });
 };
 
 const getEventById = async (req, res) => {
